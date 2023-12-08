@@ -1,7 +1,7 @@
 {
-  "name": "ntfa-api",
+  "name": "xxx-api",
   "version": "1.0.0",
-  "description": "全流量融合分析系统",
+  "description": "xxx-api",
   "main": "dist/swagger/index.js",
   "files": [
     "dist/swagger"
