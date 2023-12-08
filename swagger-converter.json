@@ -1,0 +1,9 @@
+{
+    "hostname": "192.168.168.231",
+    "port": 443,
+    "path": "/api/swagger/doc.json",
+    "method": "GET",
+    "serviceDepts": "import myRequest from \"./../myRequest\";\nimport { RequestOptionsWithResponse } from \"umi-request\";\nimport { stringify } from 'qs';",
+    "template": "\n/**\n* {0}{1}\n* @param $data body 参数\n* @param $queryString url参数\n*/\nexport async function {2}({3}$data?:{4},$queryString?:{5}, options?: Omit<RequestOptionsWithResponse,'data'>) {\n    return myRequest.{6}<{7}>(`/api{8}` + '?' + stringify($queryString), {\n        data: $data,\n        ...options\n    });\n}\n",
+    "createDir": "/src/swagger"
+}
