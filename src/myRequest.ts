@@ -1,6 +1,5 @@
 import message from 'antd/lib/message';
 import notification from 'antd/lib/notification';
-import moment from 'moment';
 import { extend } from 'umi-request';
 //导入 umi-request-progress,解决umi-request不支持上传文件进度条的问题
 import progressMiddleware from 'umi-request-progress';
@@ -132,58 +131,6 @@ myRequest.use(async (ctx, next) => {
         }
     }
 });
-
-// 记录请求日志
-myRequest.interceptors.response.use(async (response, options) => {
-    if (options.responseType == "blob" || options.responseType == "arrayBuffer") return response;
-    const request = indexedDB.open('response-log', 1);
-    request.onsuccess = () => {
-        const db = request.result;
-        if (db.objectStoreNames.contains('response')) {
-            // 查数据
-            const store = db.transaction('response', 'readwrite').objectStore('response');
-            let keys = store.getAllKeys();
-            keys.transaction!.oncomplete = () => {
-                let max = Math.max(...(keys.result ?? []) as number[]);
-                // 删除 max - 49999 之前的数据
-                var keyRangeValue = IDBKeyRange.bound(0, max - 49999 < 0 ? 0 : max - 49999);
-                db.transaction('response', 'readwrite').objectStore('response').delete(keyRangeValue);
-            }
-            // 写数据
-            try {
-                if (response.status != 200) throw '请求错误';
-                else {
-                    response.clone().json().then(res => {
-                        const store = db.transaction('response', 'readwrite').objectStore('response');
-                        store.add({
-                            url: response.url,
-                            time: moment().format('YYYY-MM-DD HH:mm:ss'),
-                            responseJson: JSON.stringify(res)
-                        });
-                    });
-                }
-            }
-            catch (e) {
-                const store = db.transaction('response', 'readwrite').objectStore('response');
-                store.add({
-                    url: response.url,
-                    time: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    responseJson: '请求错误'
-                });
-            }
-        }
-    }
-    request.onupgradeneeded = (event) => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains('response')) {
-            const store = db.createObjectStore('response', { keyPath: 'id', autoIncrement: true });
-            store.createIndex('url', 'url', { unique: false });
-            store.createIndex('time', 'time', { unique: false });
-            store.createIndex('responseJson', 'responseJson', { unique: false });
-        }
-    };
-    return response;
-})
 
 // 大屏拦截器，任何接口在大屏报错都不弹出错误信息(其他场景下都不适用)
 myRequest.interceptors.response.use(async (response, options) => {
